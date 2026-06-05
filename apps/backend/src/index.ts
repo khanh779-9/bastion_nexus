@@ -29,16 +29,18 @@ const server = createServer(app);
 // Khởi tạo Socket.IO
 initSocketIO(server);
 
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+}));
+
 // Security Middleware
 const allowAll = !config.frontendUrl || config.frontendUrl === '*';
 if (!allowAll) {
   app.use(helmet());
 }
-app.use(cors({
-  origin: '*',
-  credentials: false,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}));
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));

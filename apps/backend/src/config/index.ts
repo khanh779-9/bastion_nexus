@@ -5,13 +5,24 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+function getPortFromUrl(urlStr: string, defaultPort: number): number {
+  try {
+    const parsed = new URL(urlStr);
+    return parsed.port ? parseInt(parsed.port, 10) : defaultPort;
+  } catch {
+    return defaultPort;
+  }
+}
+
+const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3000';
+
 export const config = {
-  port: process.env.PORT ? Number(process.env.PORT) : 3000,
+  port: getPortFromUrl(backendUrl, 3000),
   dbUrl: process.env.DATABASE_URL ?? '',
   jwtSecret: process.env.JWT_SECRET ?? 'devsecret',
   nodeEnv: process.env.NODE_ENV ?? 'development',
   frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:5173',
-  backendUrl: process.env.BACKEND_URL ?? 'http://localhost:3000',
+  backendUrl,
   runMigrations: process.env.RUN_MIGRATIONS === 'true',
 
   // Redis

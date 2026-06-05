@@ -13,6 +13,7 @@ export interface ThemePalette {
   button: string;
   buttonSecondary: string;
   buttonDanger: string;
+  buttonOutline: string;
   accent: string;
   accentText: string;
   accentHover: string;
@@ -20,6 +21,7 @@ export interface ThemePalette {
   effect: string;
   focusRing: string;
   dangerText: string;
+  link: string;
 
   // Feature: Vault
   featureVaultBg: string;
@@ -59,9 +61,10 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     cardTitle: 'text-neutral-900',
     cardDesc: 'text-neutral-600',
     input: 'bg-white text-neutral-900 border-neutral-300 focus:ring-cyan-500',
-    button: 'bg-cyan-600 text-white hover:bg-cyan-700',
-    buttonSecondary: 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300',
-    buttonDanger: 'bg-red-600 text-white hover:bg-red-700',
+    button: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_2px_8px_rgba(8,145,178,0.15)] hover:shadow-[0_4px_12px_rgba(8,145,178,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonSecondary: 'bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 hover:border-neutral-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonDanger: 'bg-red-600 hover:bg-red-500 text-white shadow-[0_2px_8px_rgba(220,38,38,0.15)] hover:shadow-[0_4px_12px_rgba(220,38,38,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonOutline: 'border border-cyan-600 text-cyan-600 bg-transparent hover:bg-cyan-50 hover:border-cyan-700 hover:text-cyan-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
     accent: 'bg-cyan-600',
     accentText: 'text-white',
     accentHover: 'hover:bg-cyan-700',
@@ -69,6 +72,7 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     effect: 'ring-cyan-500',
     focusRing: 'focus:ring-cyan-500',
     dangerText: 'text-red-600',
+    link: 'text-cyan-600 hover:text-cyan-700 hover:underline transition-colors duration-200',
 
     // Feature: Vault
     featureVaultBg: 'bg-gradient-to-br from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20',
@@ -106,9 +110,10 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     cardTitle: 'text-slate-100',
     cardDesc: 'text-slate-400',
     input: 'bg-[#131a26] text-cyan-100 border-[#22304a] focus:ring-cyan-400',
-    button: 'bg-cyan-700 text-cyan-50 hover:bg-cyan-600',
-    buttonSecondary: 'bg-[#22304a] text-cyan-200 hover:bg-[#1a2537]',
-    buttonDanger: 'bg-red-700 text-white hover:bg-red-600',
+    button: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_2px_8px_rgba(6,182,212,0.2)] hover:shadow-[0_4px_16px_rgba(6,182,212,0.45)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonSecondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonDanger: 'bg-rose-500 hover:bg-rose-400 text-slate-950 shadow-[0_2px_8px_rgba(244,63,94,0.2)] hover:shadow-[0_4px_16px_rgba(244,63,94,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
+    buttonOutline: 'border border-cyan-500/50 text-cyan-400 bg-transparent hover:bg-cyan-500/10 hover:border-cyan-400 hover:text-cyan-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200',
     accent: 'bg-cyan-600',
     accentText: 'text-cyan-50',
     accentHover: 'hover:bg-cyan-500',
@@ -116,6 +121,7 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     effect: 'ring-cyan-400',
     focusRing: 'focus:ring-cyan-400',
     dangerText: 'text-red-400',
+    link: 'text-cyan-400 hover:text-cyan-300 hover:underline transition-colors duration-200',
 
     // Feature: Vault
     featureVaultBg: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/40 hover:from-cyan-800/50 hover:to-blue-800/50',

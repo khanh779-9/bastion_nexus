@@ -8,7 +8,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const backendUrl = (env.VITE_BACKEND_URL || env.BACKEND_URL || '').trim().replace(/\/+$/, '');
-  const port = parseInt(env.PORT || '5173', 10) || 5173;
+  const frontendUrl = (env.VITE_FRONTEND_URL || env.FRONTEND_URL || 'http://localhost:5173').trim();
+  let port = 5173;
+  try {
+    const url = new URL(frontendUrl);
+    if (url.port) port = parseInt(url.port, 10);
+  } catch {}
   const proxy = backendUrl
     ? {
         '/api': {

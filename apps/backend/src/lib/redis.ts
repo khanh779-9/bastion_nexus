@@ -12,6 +12,7 @@ export function getRedis(): Redis {
 
   redis = new Redis(config.redisUrl, {
     maxRetriesPerRequest: null, // BullMQ requirement
+    enableOfflineQueue: false,
     retryStrategy(times: number) {
       const delay = Math.min(times * 200, 5000);
       console.log(`[Redis] Reconnecting... attempt ${times}, delay ${delay}ms`);

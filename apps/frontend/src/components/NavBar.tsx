@@ -379,7 +379,7 @@ export default function NavBar({ user, onLogout }: NavBarProps) {
               </Link>
               <Link 
                 to="/register" 
-                className={"px-3 py-1.5 rounded-md text-xs font-medium border-2 transition-colors " + getThemeColor(theme, 'accent') + ' ' + getThemeColor(theme, 'accentText')}
+                className={"px-3 py-1.5 rounded-md text-xs font-medium " + getThemeColor(theme, 'buttonOutline')}
               >
                 {t('navbar.register')}
               </Link>
