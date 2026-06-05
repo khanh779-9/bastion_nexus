@@ -1,0 +1,326 @@
+// Bastion Nexus — Prisma Schema
+// PostgreSQL multi-schema: account, note, vault, audit, notification, breach, wallet
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["account", "note", "vault", "audit", "notification", "breach", "wallet"]
+}
+
+// ─────────────────────────────────────────────
+// ACCOUNT SCHEMA
+// ─────────────────────────────────────────────
+
+model AccountStatus {
+  code        String  @id @db.VarChar(20)
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+  users       User[]
+
+  @@map("statuses")
+  @@schema("account")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  status    String   @default("active") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  statusRef     AccountStatus  @relation(fields: [status], references: [code])
+  devices       Device[]
+  profile       Profile?
+  security      Security?
+  sessions      Session[]
+  settings      Setting[]
+  notes         Note[]
+  vaultItems    VaultItem[]
+  vaultTags     VaultTag[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  breachMonitors BreachMonitor[]
+  walletItems   WalletItem[]
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("users")
+  @@schema("account")
+}
+
+model Device {
+  id         Int      @id @default(autoincrement())
+  accountId  Int      @map("account_id")
+  name       String?
+  fingerprint String?
+  trusted    Boolean  @default(false)
+  lastUsedAt DateTime @default(now()) @map("last_used_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("devices")
+  @@schema("account")
+}
+
+model Profile {
+  id          Int      @id @default(autoincrement())
+  accountId   Int      @unique @map("account_id")
+  displayName String   @map("display_name")
+  avatarUrl   String?  @map("avatar_url")
+  phone       String?
+  birthday    DateTime? @db.Date
+  bio         String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+  @@schema("account")
+}
+
+model Security {
+  id                   Int       @id @default(autoincrement())
+  accountId            Int       @unique @map("account_id")
+  securityLevel        Int       @default(0) @map("security_level") @db.SmallInt
+  otpEnabled           Boolean   @default(false) @map("otp_enabled")
+  otpSecret            Bytes?    @map("otp_secret")
+  otpVerifiedAt        DateTime? @map("otp_verified_at") @db.Timestamptz
+  requireTrustedDevice Boolean   @default(false) @map("require_trusted_device")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("security")
+  @@schema("account")
+}
+
+model Session {
+  id             Int       @id @default(autoincrement())
+  accountId      Int       @map("account_id")
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  lastActivityAt DateTime? @default(now()) @map("last_activity_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt      DateTime? @map("expires_at") @db.Timestamptz
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([accountId, revokedAt])
+  @@map("sessions")
+  @@schema("account")
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  accountId Int      @map("account_id")
+  key       String
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, key])
+  @@index([accountId])
+  @@map("settings")
+  @@schema("account")
+}
+
+// ─────────────────────────────────────────────
+// NOTE SCHEMA
+// ─────────────────────────────────────────────
+
+model Note {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId   Int      @map("account_id")
+  title       String?  @db.VarChar(200)
+  content     String
+  isEncrypted Boolean  @default(false) @map("is_encrypted")
+  password    Bytes?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  color       String?
+
+  user   User        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  shares NoteShare[]
+
+  @@map("item")
+  @@schema("note")
+}
+
+model NoteShare {
+  id           Int       @id @default(autoincrement())
+  noteId       String    @map("note_id") @db.Uuid
+  shareToken   String    @default(dbgenerated("gen_random_uuid()")) @map("share_token") @db.Uuid
+  passwordHash String?   @map("password_hash")
+  expiredAt    DateTime? @map("expired_at") @db.Timestamptz
+  maxViews     Int?      @map("max_views")
+  viewCount    Int       @default(0) @map("view_count")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("share")
+  @@schema("note")
+}
+
+// ─────────────────────────────────────────────
+// VAULT SCHEMA
+// ─────────────────────────────────────────────
+
+model VaultItem {
+  id          Int      @id @default(autoincrement())
+  accountId   Int      @map("account_id")
+  type        String   @default("other")
+  name        String
+  username    String?
+  email       String?
+  password    String?
+  otpSecret   String?  @map("otp_secret")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tags VaultTag[] @relation("VaultItemTags")
+
+  @@map("items")
+  @@schema("vault")
+}
+
+model VaultTag {
+  id        Int     @id @default(autoincrement())
+  accountId Int     @map("account_id")
+  name      String  @db.VarChar(50)
+  color     String? @db.VarChar(7)
+
+  user  User        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  items VaultItem[] @relation("VaultItemTags")
+
+  @@map("tags")
+  @@schema("vault")
+}
+
+// ─────────────────────────────────────────────
+// AUDIT SCHEMA
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id           Int      @id @default(autoincrement())
+  accountId    Int?     @map("account_id")
+  action       String
+  resourceType String?  @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  details      Json?
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@map("logs")
+  @@schema("audit")
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATION SCHEMA
+// ─────────────────────────────────────────────
+
+model Notification {
+  id           Int       @id @default(autoincrement())
+  accountId    Int       @map("account_id")
+  type         String    @default("info")
+  title        String
+  content      String?
+  resourceType String?   @map("resource_type")
+  resourceId   String?   @map("resource_id")
+  isRead       Boolean   @default(false) @map("is_read")
+  readAt       DateTime? @map("read_at") @db.Timestamptz
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("items")
+  @@schema("notification")
+}
+
+// ─────────────────────────────────────────────
+// BREACH SCHEMA
+// ─────────────────────────────────────────────
+
+model BreachMonitor {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @map("user_id")
+  monitorType  String    @map("monitor_type")
+  monitorValue String    @map("monitor_value")
+  status       String    @default("active")
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  results BreachResult[]
+
+  @@map("monitor")
+  @@schema("breach")
+}
+
+model BreachResult {
+  id           Int       @id @default(autoincrement())
+  monitorId    Int       @map("monitor_id")
+  breached     Boolean
+  breachSource String?   @map("breach_source")
+  breachDate   DateTime? @map("breach_date") @db.Timestamptz
+  rawData      Json?     @map("raw_data")
+  checkedAt    DateTime? @default(now()) @map("checked_at") @db.Timestamptz
+
+  monitor BreachMonitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@map("result")
+  @@schema("breach")
+}
+
+// ─────────────────────────────────────────────
+// WALLET SCHEMA
+// ─────────────────────────────────────────────
+
+model WalletItem {
+  id              Int      @id @default(autoincrement())
+  accountId       Int      @map("account_id")
+  walletType      String   @map("wallet_type")
+  name            String
+  address         String?
+  encryptedSecret Bytes    @map("encrypted_secret")
+  description     String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     User             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  metadata WalletMetadata[]
+
+  @@map("items")
+  @@schema("wallet")
+}
+
+model WalletMetadata {
+  id       Int    @id @default(autoincrement())
+  walletId Int    @map("wallet_id")
+  key      String
+  value    String
+
+  wallet WalletItem @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("metadata")
+  @@schema("wallet")
+}

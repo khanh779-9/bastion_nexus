@@ -1,4 +1,4 @@
--- 001_init.sql: Schema và bảng cho Kanion Platform (PostgreSQL)
+-- 001_init.sql: Schema và bảng cho Bastion Nexus (PostgreSQL)
 
 -- Tạo schema
 CREATE SCHEMA IF NOT EXISTS account;

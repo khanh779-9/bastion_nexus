@@ -2,7 +2,7 @@
   "name": "English",
   "code": "en",
   "navbar": {
-    "brandName": "Kanion Secure Space",
+    "brandName": "Bastion Nexus",
     "notifications": "Notifications",
     "viewAll": "View All →",
     "showRecent": "Show Recent",
@@ -42,7 +42,7 @@
     "notesTitle": "Notes",
     "notesDesc": "Create and share encrypted notes securely",
     "ctaTitle": "Ready to take control?",
-    "ctaDesc": "Join thousands of users protecting their data with Kanion Secure Space",
+    "ctaDesc": "Join thousands of users protecting their data with Bastion Nexus",
     "createAccount": "Create Your Account"
   },
   "login": {

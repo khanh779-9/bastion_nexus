@@ -2,7 +2,7 @@
   "name": "Tiếng Việt",
   "code": "vi",
   "navbar": {
-    "brandName": "Kanion Secure Space",
+    "brandName": "Bastion Nexus",
     "notifications": "Thông báo",
     "viewAll": "Xem tất cả →",
     "showRecent": "Hiển thị gần đây",
@@ -42,7 +42,7 @@
     "notesTitle": "Ghi Chú",
     "notesDesc": "Tạo và chia sẻ ghi chú được mã hóa một cách an toàn",
     "ctaTitle": "Sẵn sàng kiểm soát?",
-    "ctaDesc": "Tham gia hàng nghìn người dùng bảo vệ dữ liệu của họ bằng Kanion Secure Space",
+    "ctaDesc": "Tham gia hàng nghìn người dùng bảo vệ dữ liệu của họ bằng Bastion Nexus",
     "createAccount": "Tạo Tài Khoản"
   },
   "login": {

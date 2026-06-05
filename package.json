@@ -1,8 +1,8 @@
 {
-  "name": "kanion-platform",
+  "name": "bastion-nexus",
   "version": "1.0.0",
   "private": true,
-  "description": "Kanion Platform - Security Vault Management System",
+  "description": "Bastion Nexus — Personal Security Ecosystem with Encrypted Vault, Notes, Wallet & Breach Monitoring",
   "workspaces": [
     "apps/backend",
     "apps/frontend"

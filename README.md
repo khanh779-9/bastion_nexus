@@ -1,237 +1,180 @@
-<div align="center">
-   <h1>🔐 Kanion Secure Space</h1>
-   <b>Nền tảng full-stack cho ghi chú bảo mật, kho mật khẩu và quản lý dữ liệu mã hóa</b>
-   <br />
-   <br />
+# Bastion Nexus - Personal Security Ecosystem
 
-</div>
+Bastion Nexus is a self-hosted personal security platform designed to secure passwords, credentials, notes, digital credit cards, and wallets. The ecosystem is built entirely with TypeScript, utilizing a secure architecture backed by Prisma ORM, PostgreSQL, Redis, Socket.IO, BullMQ, and Swagger.
 
 ---
 
-## Tổng quan
+## System Architecture Flow
 
-**Kanion Secure Space** là một nền tảng mã nguồn mở quản lý mật khẩu và ghi chú mã hóa với chuẩn bảo mật cấp quân sự. Dự án được xây dựng bằng React 18, Node.js và PostgreSQL để lưu trữ an toàn mật khẩu, mã TOTP, ghi chú và dữ liệu cá nhân.
+The following diagram illustrates the workflow of the Bastion Nexus ecosystem, including Client requests, Rate Limiting, Authentication, Real-time communication, Database operations with automatic encryption, and Asynchronous job queues:
 
-**Tính năng:**
+```mermaid
+graph TD
+    Client[React Client] -->|HTTP / WebSockets| Server[Express Backend]
+    
+    subgraph Security & Middleware
+        Server --> Auth[JWT Authentication]
+        Server --> RateLimit[Redis-Backed Rate Limiting]
+    end
 
-- Mã hóa AES-256-GCM cho toàn bộ dữ liệu nhạy cảm
-- Hỗ trợ TOTP 6 chữ số kèm đếm ngược theo thời gian thực
-- Ghi chú mã hóa với màu tùy chỉnh
-- Giao diện Dark/Light/Auto
-- Hỗ trợ nhiều ngôn ngữ (Tiếng Anh, Tiếng Việt, ... - trong tương lai có thể mở rộng thêm)
-- Thiết kế responsive ưu tiên màn di động
-- Xác thực JWT kèm nhật
+    subgraph Memory & Messaging Cache
+        RateLimit -->|Store Hits| Redis[(Redis Server)]
+        SocketAdapter[Socket.IO Redis Adapter] <--> Redis
+    end
+
+    subgraph Realtime Communication
+        Server <--> Socket[Socket.IO Namespace /notifications]
+        Socket -->|Real-time alerts| Client
+    end
+
+    subgraph Background Job Queue
+        Server -->|Enqueue Jobs| Queue[BullMQ Queue Manager]
+        Queue <-->|Store Jobs| Redis
+        WorkerBreach[Breach Worker] <--> Queue
+        WorkerNotif[Notification Worker] <--> Queue
+        WorkerBreach -->|Call API| HIBP[HaveIBeenPwned API]
+        WorkerNotif -->|Send Mail| SMTP[Nodemailer SMTP Server]
+    end
+
+    subgraph Persistent Storage
+        Server -->|Prisma Client| PrismaExtension[Prisma Auto-Encryption Extension]
+        PrismaExtension -->|Read/Write AES-256-GCM| PostgreSQL[(PostgreSQL Database)]
+    end
+```
 
 ---
 
-## Ảnh màn hình
+## Core Features
 
-<p align="center">
-   <img src="screenshot/screenshot_home.png" alt="Kanion Home" width="45%" />
-   <img src="screenshot/screenshot_vault.png" alt="Kanion Vault" width="45%" />
-</p>
-<p align="center">
-   <img src="screenshot/screenshot_note.png" alt="Kanion Note" width="45%" />
-   <img src="screenshot/screenshot_leak.png" alt="Kanion Breach Monitor" width="45%" />
-</p>
+### 1. Zero-Knowledge and Field-Level Encryption
+All sensitive fields (passwords, digital wallet secrets, credit card CVVs, and secure notes) are transparently encrypted and decrypted using AES-256-GCM on the database layer. Decryption keys are managed via secure environment variables.
 
----
+### 2. Distributed Rate Limiting
+A custom Express middleware backed by Redis prevents brute-force attempts on authentication and sensitive endpoints. If Redis is unavailable, the system safely falls back to local memory rate limiting.
 
-## Công nghệ sử dụng
+### 3. Asynchronous Job Processing
+Job scheduling and queues are handled through BullMQ, keeping CPU-heavy operations away from the main Express threat:
+- Breach Checks: Regularly queries the HaveIBeenPwned API to monitor registered user email exposures.
+- Notifications: Sends automated email alerts through a multi-retry SMTP worker queue.
 
-**Frontend:** React Vite
+### 4. Real-time Events
+Real-time messaging is established using Socket.IO. When a breach or login event is caught by the background worker, WebSocket messages are instantly pushed to the user's dashboard via the /notifications namespace.
 
-**Backend:** Node.js (v20+), Express.js
-
-**CSDL:** PostgreSQL
-
-**Công cụ:** pnpm • Docker • Docker Compose
+### 5. Automated Swagger Documentation
+API definitions are documented inside the Express routes using Swagger annotations. Gaining access to local API documentation is as simple as visiting /api-docs.
 
 ---
 
-## Cấu trúc dự án
+## Technology Stack
+
+### Backend
+- Language: TypeScript
+- Web Framework: Express (Node.js)
+- Database ORM: Prisma (PostgreSQL)
+- Key-Value Cache / Queue Broker: Redis (ioredis)
+- Background Queue: BullMQ
+- Real-time Connection: Socket.IO
+- Documentation: Swagger UI (swagger-jsdoc, swagger-ui-express)
+
+### Frontend
+- Language: TypeScript
+- Core Library: React 18
+- Bundler & Dev Server: Vite
+- CSS Utility: Tailwind CSS
+- Routing: React Router Dom v6
+
+---
+
+## Directory Structure
 
 ```
-Kanion_Platform/              # Monorepo
+.
 ├── apps/
-│   ├── backend/             # Express API (Cổng: 3000)
+│   ├── backend/
+│   │   ├── prisma/             # Schema files and database migrations
 │   │   ├── src/
-│   │   │   ├── routes/      # auth, vault, notes, user
-│   │   │   ├── middleware/  # auth, rateLimit
-│   │   │   ├── db/          # pool, migrate
-│   │   │   └── utils/       # encryption, auditLog
-│   │   └── sql/001_init.sql # Schema cơ sở dữ liệu
-│   └── frontend/            # Ứng dụng React (Cổng: 5173)
-│       └── src/
-│           ├── pages/       # Login, Vault, Notes, v.v.
-│           ├── components/  # NavBar, Theme, Toast
-│           ├── api/         # client, notifications
-│           └── locales/     # en.json, vi.json
-├── pnpm-workspace.yaml
-└── README.md
+│   │   │   ├── config/         # System configurations
+│   │   │   ├── lib/            # Shared clients (Prisma, Redis, Socket, BullMQ)
+│   │   │   ├── middleware/     # Auth and rate limits
+│   │   │   ├── routes/         # Backend Express endpoints
+│   │   │   ├── jobs/           # Workers (breach check, mailer)
+│   │   │   └── utils/          # Encryption, mail wrappers, user agent parse
+│   │   └── tsconfig.json
+│   └── frontend/
+│       ├── src/
+│       │   ├── api/            # API client configurations
+│       │   ├── components/     # Reusable components
+│       │   ├── locales/        # Translation providers (EN/VI)
+│       │   ├── pages/          # Pages (Vault, Wallet, Notes, Breach)
+│       │   └── App.tsx         # Root layout
+│       └── tsconfig.json
+├── package.json                # Monorepo workspaces
+├── Dockerfile                  # Production build pipeline
+└── apps/backend/docker-compose.yml
 ```
 
 ---
 
-## Bắt đầu nhanh
+## Setup and Installation
 
-### Yêu cầu trước chạy
+### Prerequisites
+- Node.js (version 18.0.0 or higher)
+- npm (version 9.0.0 or higher)
+- PostgreSQL
+- Redis Server (local or Upstash cloud)
 
-- Node.js
-- PostgreSQL 12+
-- pnpm (hoặc npm)
+### Development Setup
 
-### 1. Cài db
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd Kanion_Platform
+   ```
 
+2. Install dependencies for all workspaces:
+   ```bash
+   npm install
+   ```
+
+3. Create the backend environmental configuration:
+   Create a `.env` file in `apps/backend/` using `apps/backend/.env.example` as a reference:
+   ```env
+   DATABASE_URL="postgresql://dev:dev@localhost:5432/bastion_nexus?schema=public&sslmode=prefer"
+   REDIS_URL="redis://localhost:6379"
+   JWT_SECRET="your_secure_jwt_secret"
+   ENCRYPTION_KEY="your_secure_aes_encryption_key_32_bytes"
+   ```
+
+4. Create the frontend environmental configuration:
+   Create a `.env` file in `apps/frontend/` using `apps/frontend/.env.example` as a reference:
+   ```env
+   VITE_BACKEND_URL="http://localhost:3000"
+   ```
+
+5. Run local dependencies using Docker Compose:
+   ```bash
+   cd apps/backend
+   docker compose up -d
+   ```
+
+6. Generate Prisma client and run database migrations:
+   ```bash
+   cd ../..
+   npm run build:backend
+   npm run migrate
+   ```
+
+7. Start the development server (both frontend and backend concurrently):
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Production Deployment
+
+This project supports production deployment through Docker. The root `Dockerfile` runs a multi-stage compilation that compiles both the React application and the Express/TypeScript server, copying static assets to be served directly from the backend's public directory.
+
+Build the production Docker image:
 ```bash
-createdb kanion_db
-psql -U postgres -d kanion_db -f apps/backend/sql/001_init.sql
+docker build -t bastion-nexus .
 ```
-
-### 2. Backend
-
-```bash
-cd apps/backend
-cp .env.example .env        # Sửa theo cấu hình của bạn
-pnpm install
-pnpm run dev                # Chế độ phát triển
-# pnpm start               # Chế độ production
-```
-
-### 3. Frontend
-
-```bash
-cd apps/frontend
-cp .env.example .env        # Sửa URL backend
-pnpm install
-pnpm run dev                # Dev server: http://localhost:5173
-```
-
-### Truy cập
-
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
-
----
-
-## Tính năng bảo mật
-
-- **Mã hóa:** AES-256-GCM cho toàn bộ dữ liệu nhạy cảm
-- **Xác thực:** Token JWT 
-- **Bảo mật mật khẩu:** Băm bằng Bcrypt (12 rounds)
-- **Giới hạn tần suất:** 10 request/15 phút cho mỗi IP
-- **Nhật ký:** Log đăng nhập, theo dõi thiết bị, sự kiện bảo mật
-- **Security headers:** CORS, CSP, X-Frame-Options
-
----
-
-## Build cho production
-
-### Backend
-
-```bash
-cd apps/backend
-pnpm install --production
-pnpm start
-```
-
-### Frontend
-
-```bash
-cd apps/frontend
-pnpm run build
-# Output: dist/ → Deploy lên Vercel, Netlify, v.v.
-```
-
----
-
-## Triển kha
-
-### Điều kiện quyết đinh
-
-- Node.js v20 LTS
-- Cơ sở dữ liệu PostgreSQL
-- Có `pnpm-workspace.yaml` ở thư mục gốc (đã có sẵn)
-
-### Backend
-
-```bash
-# Build: pnpm install
-# Start: cd apps/backend && npm start
-```
-
-### Frontend
-
-```bash
-# Build: cd apps/frontend && pnpm install && npm run build
-# Publish Directory: apps/frontend/dist
-```
-
-### Biến môi trường (Backend)
-
-```env
-PORT=3000
-NODE_ENV=production
-DATABASE_URL=your_postgresql_url
-DB_SSL=true
-JWT_SECRET=your_jwt_secret
-ENCRYPTION_KEY=your_encryption_key
-HIBP_API_KEY=your_hibp_api_key_optional
-FRONTEND_URL=https://your-frontend-url.com
-BACKEND_URL=https://your-backend-url.com
-RUN_MIGRATIONS=true
-
-# Optional SMTP
-# SMTP_HOST=smtp.example.com
-# SMTP_PORT=587
-# SMTP_USER=your@email.com
-# SMTP_PASS=yourpassword
-# SMTP_FROM=no-reply@example.com
-```
-
-**Xử lý vấn đề:**
-
-- Lỗi: "Cannot find package 'express'" → Đảm bảo đã commit `pnpm-lock.yaml`
-- Lỗi: "ERR_INVALID_THIS" → Cập nhật Node.js lên v20 LTS
-- Hướng dẫn triển khai chi tiết: [DEPLOYMENT.md](docs/DEPLOYMENT.md)
-
----
-
-## Deploy Render (Root Dockerfile)
-
-- Dự án dùng 1 Web Service chạy bằng `Dockerfile` ở thư mục gốc.
-- Frontend được build và phục vụ qua backend/public trong cùng service.
-- Đã có sẵn blueprint: `render.yaml` ở thư mục gốc.
-
-### Biến môi trường cần đặt trên Render
-
-- `DATABASE_URL`: URL PostgreSQL production (khuyến nghị endpoint IPv4/pooler)
-- `JWT_SECRET`: secret cho token
-- `FRONTEND_URL`: URL frontend được phép gọi API (CORS)
-- `BACKEND_URL`: URL public backend (ví dụ `https://kanion-app.onrender.com`)
-
----
-
-## API Endpoints
-
-**Auth:** `POST /auth/register`, `POST /auth/login`, `GET /auth/logout`
-
-**Vault:** `GET/POST /vault/items`, `GET/PUT/DELETE /vault/items/:id`
-
-**Notes:** `GET/POST /notes`, `PUT/DELETE /notes/:id`
-
-**User:** `GET/PUT /user/profile`, `GET/PUT /user/appearance-settings`
-
----
-
-## Custom
-
-- **Ngôn ngữ:** Thêm file dịch ngôn ngữ tại `frontend/src/locales/[lang].json` (file ngôn ngữ đọc dựa trên json)
-- **Giao diện:** Chỉnh sửa `frontend/src/themeColors.js`
-- **Loại mục Vault:** Cập nhật enum trong `001_init.sql`
-
----
-
-## 📄 Giấy phép
-
-MIT License - Xem file [LICENSE](LICENSE)

@@ -1,0 +1,8 @@
+Tên	Vibe	Phù hợp mở rộng
+Bastion Nexus	Kiên cố + Hệ sinh thái
+Sentinel Forge	Canh gác + Sáng tạo
+Cipher Nexus	Kỹ thuật + Hub
+Obsidian Forge	Đen tối + Rèn luyện
+Ironclad Core	Bọc sắt + Lõi
+Apex Sentinel	Đỉnh cao + Canh gác
+Vanguard Shield	Tiên phong + Khiên
