@@ -19,7 +19,7 @@ export function getIO(): SocketIOServer {
 export function initSocketIO(httpServer: HttpServer): SocketIOServer {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: config.socketCorsOrigin,
+      origin: config.frontendUrl,
       methods: ['GET', 'POST'],
     },
     transports: ['websocket', 'polling'],
