@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: bastion-nexus-frontend
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: VITE_BACKEND_URL
+        sync: false # Set manually in Render Dashboard to your backend URL (e.g. https://bastion-nexus-backend.onrender.com)

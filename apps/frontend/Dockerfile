@@ -1,7 +1,7 @@
 # Builder stage
 FROM node:20-bookworm-slim AS builder
 WORKDIR /app
-# COPY package.json ./
+COPY package.json ./
 RUN npm install
 COPY . .
 # ARG VITE_FRONTEND_URL
