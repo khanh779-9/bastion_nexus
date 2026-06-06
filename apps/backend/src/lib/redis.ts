@@ -10,16 +10,34 @@ let redis: Redis | null = null;
 export function getRedis(): Redis {
   if (redis) return redis;
 
-  redis = new Redis(config.redisUrl, {
-    maxRetriesPerRequest: null, // BullMQ requirement
-    enableOfflineQueue: false,
-    retryStrategy(times: number) {
-      const delay = Math.min(times * 200, 5000);
-      console.log(`[Redis] Reconnecting... attempt ${times}, delay ${delay}ms`);
-      return delay;
-    },
-    lazyConnect: false,
-  });
+  try {
+    const url = new URL(config.redisUrl);
+    redis = new Redis({
+      host: url.hostname,
+      port: parseInt(url.port || '6379', 10),
+      username: url.username || undefined,
+      password: url.password || undefined,
+      tls: url.protocol === 'rediss:' ? {} : undefined,
+      maxRetriesPerRequest: null, // BullMQ requirement
+      enableOfflineQueue: false,
+      retryStrategy(times: number) {
+        const delay = Math.min(times * 200, 5000);
+        console.log(`[Redis] Reconnecting... attempt ${times}, delay ${delay}ms`);
+        return delay;
+      },
+      lazyConnect: false,
+    });
+  } catch (err: any) {
+    console.error('[Redis Client Init Error]: Failed to parse redisUrl', err.message);
+    // Fallback to basic string parsing if URL constructor fails
+    redis = new Redis(config.redisUrl, {
+      maxRetriesPerRequest: null,
+      enableOfflineQueue: false,
+      retryStrategy(times: number) {
+        return Math.min(times * 200, 5000);
+      },
+    });
+  }
 
   redis.on('connect', () => {
     console.log('[Redis] Connected successfully');
