@@ -8,7 +8,8 @@ function formatUptime(seconds: number): string {
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
 
-  const parts = [];
+  // Explicitly type the array to avoid "never" inference under strict mode
+  const parts: string[] = [];
   if (d > 0) parts.push(`${d}d`);
   if (h > 0) parts.push(`${h}h`);
   if (m > 0) parts.push(`${m}m`);
