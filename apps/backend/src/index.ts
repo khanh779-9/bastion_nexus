@@ -135,3 +135,5 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (error) => {
   console.error('[Uncaught Exception]', error);
 });
+
+export default createServer(app);
