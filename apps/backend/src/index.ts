@@ -136,4 +136,4 @@ process.on('uncaughtException', (error) => {
   console.error('[Uncaught Exception]', error);
 });
 
-export default createServer(app);
+export default app;
