@@ -24,10 +24,10 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
-const promiseWithTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
+const promiseWithTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
   return Promise.race([
     promise,
-    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms))
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
   ]);
 };
 
@@ -59,10 +59,11 @@ export async function getDashboardHtml(): Promise<string> {
   let dbLatency: number | null = null;
   try {
     const dbStart = Date.now();
-    await promiseWithTimeout(prisma.$queryRaw`SELECT 1`, 2000, null);
+    await promiseWithTimeout(prisma.$queryRawUnsafe('SELECT 1'), 2000);
     dbLatency = Date.now() - dbStart;
     dbStatus = 'ONLINE';
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[Dashboard DB Connection Fail]:', error?.message || error);
     dbStatus = 'OFFLINE';
   }
 
@@ -71,12 +72,13 @@ export async function getDashboardHtml(): Promise<string> {
   let redisLatency: number | null = null;
   try {
     const redisStart = Date.now();
-    const pong = await promiseWithTimeout(getRedis().ping(), 2000, 'TIMEOUT');
+    const pong = await promiseWithTimeout(getRedis().ping(), 2000);
     if (pong === 'PONG') {
       redisLatency = Date.now() - redisStart;
       redisStatus = 'ONLINE';
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[Dashboard Redis Connection Fail]:', error?.message || error);
     redisStatus = 'OFFLINE';
   }
 
