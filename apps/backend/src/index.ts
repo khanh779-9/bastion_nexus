@@ -84,6 +84,13 @@ async function start() {
     // Check DB Connection
     await prisma.$connect();
     console.log('✅ Database connected successfully via Prisma');
+
+    if (config.runMigrations) {
+      console.log('🔄 Running database migrations...');
+      const { execSync } = await import('child_process');
+      execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+      console.log('✅ Database migrations applied successfully');
+    }
   } catch (e: any) {
     console.error('⚠️ Database connection failed:', e.message);
     console.warn('Server starting despite DB connection error for debugging...');

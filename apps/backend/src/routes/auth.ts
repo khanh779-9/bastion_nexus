@@ -202,7 +202,8 @@ router.get("/user/notifications", requireAuth, async (req: AuthRequest, res) => 
     }));
     
     res.json(mapped);
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Fetch notifications list error:", e);
     res.status(500).json({ error: "Failed to fetch notifications" });
   }
 });
@@ -233,7 +234,8 @@ router.get("/user/notifications/all", requireAuth, async (req: AuthRequest, res)
     }));
     
     res.json(mapped);
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Fetch all notifications error:", e);
     res.status(500).json({ error: "Failed to fetch notifications" });
   }
 });
