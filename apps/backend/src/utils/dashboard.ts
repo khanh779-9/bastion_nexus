@@ -594,8 +594,8 @@ export async function getDashboardHtml(): Promise<string> {
 
         <!-- Document Links -->
         <div class="links-container">
-          <a href="/api-docs" class="btn-link" target="_blank">📄 Swagger Docs</a>
-          <a href="/api/health" class="btn-link" target="_blank">🔍 Health API</a>
+          <a href="/api-docs" class="btn-link" target="_blank">Swagger Docs</a>
+          <a href="/api/health" class="btn-link" target="_blank">Health API</a>
         </div>
       </div>
 
