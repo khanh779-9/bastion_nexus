@@ -4,8 +4,8 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 COPY . .
-# ARG VITE_FRONTEND_URL
-# ARG VITE_BACKEND_URL
+ARG VITE_FRONTEND_URL
+ARG VITE_BACKEND_URL
 RUN npm run build
 
 # Runner stage
