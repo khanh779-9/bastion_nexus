@@ -14,7 +14,7 @@ export function getRedis(): Redis {
     const url = new URL(config.redisUrl);
     redis = new Redis({
       host: url.hostname,
-      port: parseInt(url.port || '6379', 10),
+      port: parseInt(url.port || '6379', 6379),
       username: url.username || undefined,
       password: url.password || undefined,
       tls: url.protocol === 'rediss:' ? {} : undefined,
