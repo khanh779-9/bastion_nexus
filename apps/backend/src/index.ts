@@ -12,10 +12,6 @@ import { swaggerSpec } from './config/swagger.js';
 import swaggerUi from 'swagger-ui-express';
 import { rateLimit } from './middleware/rateLimit.js';
 
-// BullMQ Workers
-import './jobs/workers/breachCheck.js';
-import './jobs/workers/notification.js';
-
 // Routes
 import authRoutes from './routes/auth.js';
 import vaultRoutes from './routes/vault.js';
@@ -29,8 +25,10 @@ import { getDashboardHtml } from './utils/dashboard.js';
 const app = express();
 const server = createServer(app);
 
-// Init Socket.IO
-initSocketIO(server);
+// Init Socket.IO (only if not running in a Vercel serverless environment)
+if (!process.env.VERCEL) {
+  initSocketIO(server);
+}
 
 // CORS
 app.use(cors({
@@ -118,16 +116,31 @@ async function start() {
     console.warn('Server starting anyway for debugging...');
   }
 
+  // Load and start BullMQ Workers only for persistent server environment (non-Vercel)
+  try {
+    console.log('🔄 Loading BullMQ workers...');
+    const { startBreachCheckWorker } = await import('./jobs/workers/breachCheck.js');
+    await import('./jobs/workers/notification.js');
+    startBreachCheckWorker();
+    console.log('✅ BullMQ workers loaded and started');
+  } catch (workerError: any) {
+    console.error('⚠️ Failed to initialize BullMQ workers:', workerError.message);
+  }
+
   server.listen(config.port, () => {
     console.log(`🚀 Bastion Nexus API listening on ${config.backendUrl}`);
     console.log(`📄 Swagger docs at ${config.backendUrl}/api-docs`);
   });
 }
 
-start().catch((e) => {
-  console.error('Failed to start server:', e);
-  process.exit(1);
-});
+// Only start the HTTP listener if NOT running in a Vercel serverless environment.
+// On Vercel, requests are routed directly to the exported 'app' handler.
+if (!process.env.VERCEL) {
+  start().catch((e) => {
+    console.error('Failed to start server:', e);
+    process.exit(1);
+  });
+}
 
 // Global process handlers
 process.on('unhandledRejection', (reason) => {
