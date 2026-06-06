@@ -40,7 +40,8 @@ app.use(cors({
 // Security Middleware
 const allowAll = !config.frontendUrl || config.frontendUrl === '*';
 if (!allowAll) {
-  app.use(helmet());
+  // Cast to any to avoid TS2349 when helmet's type lacks call signatures
+  app.use((helmet as any)());
 }
 
 app.use(express.json({ limit: '1mb' }));
