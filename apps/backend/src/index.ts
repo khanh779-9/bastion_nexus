@@ -22,6 +22,7 @@ import notesRoutes from './routes/notes.js';
 import userRoutes from './routes/user.js';
 import breachRoutes from './routes/breach.js';
 import walletRoutes from './routes/wallet.js';
+import { getDashboardHtml } from './utils/dashboard.js';
 
 const app = express();
 const server = createServer(app);
@@ -92,52 +93,15 @@ async function start() {
   app.use(express.static(path.join(process.cwd(), 'public')));
 
   // API root instructions
-  app.get('/', (_req, res) => {
-    res.json({
-      message: 'Welcome to Bastion Nexus API!',
-      endpoints: {
-        auth: {
-          register: {
-            method: 'POST',
-            path: '/api/auth/register',
-            body: { email: 'user@example.com', password: 'yourPassword' }
-          },
-          login: {
-            method: 'POST',
-            path: '/api/auth/login',
-            body: { email: 'user@example.com', password: 'yourPassword' }
-          },
-          logout: { method: 'POST', path: '/api/auth/logout' },
-          me: { method: 'GET', path: '/api/auth/me' }
-        },
-        vault: {
-          list: { method: 'GET', path: '/api/vault/items' },
-          create: {
-            method: 'POST',
-            path: '/api/vault/items',
-            body: { name: 'My Vault', type: 'website', username: 'user', password: 'password' }
-          },
-          get: { method: 'GET', path: '/api/vault/items/:id' },
-          update: { method: 'PUT', path: '/api/vault/items/:id' },
-          delete: { method: 'DELETE', path: '/api/vault/items/:id' }
-        },
-        notes: {
-          list: { method: 'GET', path: '/api/notes' },
-          create: { method: 'POST', path: '/api/notes', body: { title: 'Note title', content: 'Note content' } },
-          get: { method: 'GET', path: '/api/notes/:id' },
-          update: { method: 'PUT', path: '/api/notes/:id' },
-          delete: { method: 'DELETE', path: '/api/notes/:id' }
-        },
-        wallet: {
-          list: { method: 'GET', path: '/api/wallet/items' },
-          create: { method: 'POST', path: '/api/wallet/items', body: { name: 'My Wallet', wallet_type: 'crypto', secret: 'secret_key' } },
-          get: { method: 'GET', path: '/api/wallet/items/:id' },
-          update: { method: 'PUT', path: '/api/wallet/items/:id' },
-          delete: { method: 'DELETE', path: '/api/wallet/items/:id' }
-        }
-      },
-      documentation: '/api-docs'
-    });
+  app.get('/', async (_req, res) => {
+    try {
+      const html = await getDashboardHtml();
+      res.setHeader('Content-Type', 'text/html');
+      return res.send(html);
+    } catch (err: any) {
+      console.error('Failed to generate status dashboard:', err);
+      return res.status(500).send('Internal Server Error');
+    }
   });
 
   // Fallback 404
