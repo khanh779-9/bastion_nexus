@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, FileText, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
+import { Lock, FileText, ArrowRight, ShieldAlert, Wallet, MessageCircle } from 'lucide-react';
 import { ThemeContext } from '@/components/ThemeContext';
 import { useTranslate } from '@/locales';
 import { getThemeColor } from '../themeColors';
@@ -18,6 +18,7 @@ export default function Home({ user }: HomeProps) {
     { to: '/notes', title: t('home.notesTitle'), desc: t('home.notesDesc'), icon: FileText },
     { to: '/wallet', title: t('wallet.title'), desc: t('wallet.desc') || 'Manage your digital assets and cards', icon: Wallet },
     { to: '/breach', title: t('breach.title'), desc: t('breach.desc') || 'Monitor your data for security breaches', icon: ShieldAlert },
+    { to: '/message', title: 'Message Chat', desc: 'Send encrypted messages to your friends and family', icon: MessageCircle }
   ];
 
   const mainClass = 'min-h-screen ' + getThemeColor(theme, 'background');
@@ -54,14 +55,14 @@ export default function Home({ user }: HomeProps) {
             let borderClass = '';
             let iconClass = '';
             let titleClass = '';
-            
+
             // Vault: Secure Blue/Cyan
             if (c.to === '/vault') {
               bgClass = getThemeColor(theme, 'featureVaultBg');
               borderClass = getThemeColor(theme, 'featureVaultBorder');
               iconClass = getThemeColor(theme, 'featureVaultIcon');
               titleClass = getThemeColor(theme, 'featureVaultText');
-            } 
+            }
             // Notes: Private Amber/Orange
             else if (c.to === '/notes') {
               bgClass = getThemeColor(theme, 'featureNotesBg');
@@ -83,20 +84,27 @@ export default function Home({ user }: HomeProps) {
               iconClass = getThemeColor(theme, 'featureBreachIcon');
               titleClass = getThemeColor(theme, 'featureBreachText');
             }
+            // Chat: Green 
+            else if (c.to === '/message') {
+              bgClass = getThemeColor(theme, 'featureChatBg');
+              borderClass = getThemeColor(theme, 'featureChatBorder');
+              iconClass = getThemeColor(theme, 'featureChatIcon');
+              titleClass = getThemeColor(theme, 'featureChatText');
+            }
 
             return (
               <Link key={c.to} to={c.to} className={`group relative flex items-center rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden ${bgClass} ${borderClass}`}>
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-20 transition-opacity blur-3xl bg-current"></div>
-                
+
                 <div className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mr-5 shadow-sm transition-transform group-hover:scale-110 ${iconClass}`}>
                   <Icon size={28} strokeWidth={2} />
                 </div>
-                
+
                 <div className="flex flex-col justify-center min-w-0 flex-1 z-10">
                   <h3 className={`text-lg font-bold mb-1 truncate ${titleClass}`}>{c.title}</h3>
                   <p className={`text-sm leading-relaxed line-clamp-2 ${cardDescClass} opacity-90`}>{c.desc}</p>
                 </div>
-                
+
                 <span className={`ml-3 p-2 rounded-full transition-all opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 bg-white/20 backdrop-blur-sm`}>
                   <ArrowRight size={18} className={getThemeColor(theme, 'text')} />
                 </span>

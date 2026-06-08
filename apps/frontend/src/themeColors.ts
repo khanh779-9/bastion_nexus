@@ -46,9 +46,15 @@ export interface ThemePalette {
   featureBreachBorder: string;
   featureBreachIcon: string;
   featureBreachText: string;
+
+  // Feature: Chat
+  featureChatBg: string;
+  featureChatBorder: string;
+  featureChatIcon: string;
+  featureChatText: string;
 }
 
-export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: string]: any } = {
+export const themeColors: { light: ThemePalette; dark: ThemePalette;[key: string]: any } = {
   light: {
     background: 'bg-white',
     backgroundSecondary: 'bg-neutral-100',
@@ -97,6 +103,12 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     featureBreachBorder: 'border-red-200/50',
     featureBreachIcon: 'text-red-600 bg-red-100',
     featureBreachText: 'text-red-700',
+
+    // Feature: Chat
+    featureChatBg: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20',
+    featureChatBorder: 'border-green-200/50',
+    featureChatIcon: 'text-green-600 bg-green-100',
+    featureChatText: 'text-green-700',
   },
   dark: {
     background: 'bg-[#0a0e17]',
@@ -128,13 +140,13 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     featureVaultBorder: 'border-cyan-800/50',
     featureVaultIcon: 'text-cyan-400 bg-cyan-900/30',
     featureVaultText: 'text-cyan-100',
-    
+
     // Feature: Notes
     featureNotesBg: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 hover:from-amber-800/50 hover:to-orange-800/50',
     featureNotesBorder: 'border-amber-800/50',
     featureNotesIcon: 'text-amber-400 bg-amber-900/30',
     featureNotesText: 'text-amber-100',
-    
+
     // Feature: Wallet
     featureWalletBg: 'bg-gradient-to-br from-violet-900/40 to-purple-900/40 hover:from-violet-800/50 hover:to-purple-800/50',
     featureWalletBorder: 'border-violet-800/50',
@@ -146,6 +158,12 @@ export const themeColors: { light: ThemePalette; dark: ThemePalette; [key: strin
     featureBreachBorder: 'border-red-800/50',
     featureBreachIcon: 'text-red-400 bg-red-900/30',
     featureBreachText: 'text-red-100',
+
+    // Feature: Chat
+    featureChatBg: 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 hover:from-green-800/50 hover:to-emerald-800/50',
+    featureChatBorder: 'border-green-800/50',
+    featureChatIcon: 'text-green-400 bg-green-900/30',
+    featureChatText: 'text-green-100',
   },
   system: {},
 };
@@ -167,10 +185,10 @@ export function getThemeColor(theme: string, key: keyof ThemePalette): string {
     }
     return light || dark || '';
   }
-  
+
   const palette = themeColors[currentTheme] as ThemePalette;
   if (palette && palette[key]) return palette[key];
-  
+
   // fallback
   return themeColors.light[key] || themeColors.dark[key] || '';
 }
